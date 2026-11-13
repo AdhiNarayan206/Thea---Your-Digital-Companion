@@ -36,6 +36,15 @@ def main():
         print("[thea] already running")
         return
 
+    import ctypes
+
+    try:
+        # Sets the explicit Application User Model ID so Windows associates the taskbar icon with Thea rather than Python
+        myappid = "thea.digitalpet.companion.1.0"
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except Exception:
+        pass
+
     from thea import config
 
     if args.scale:
