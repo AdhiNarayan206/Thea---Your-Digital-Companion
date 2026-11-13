@@ -1,0 +1,75 @@
+﻿name: Build and Release Thea Installer
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Thea Windows Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --noconfirm Thea.spec
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          .\installer\build.ps1
+
+      - name: Find Installer & Compute Metadata
+        id: installer_meta
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path installer\output\Thea-Setup-*.exe | Select-Object -First 1
+          if (-not $installer) {
+            Write-Error "Installer not found in installer\output\"
+            exit 1
+          }
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash
+          $sizeMb = [math]::Round($installer.Length / 1MB, 2)
+          echo "FILE_NAME=$($installer.Name)" >> $env:GITHUB_OUTPUT
+          echo "FILE_PATH=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+          echo "SHA256=$hash" >> $env:GITHUB_OUTPUT
+          echo "SIZE_BYTES=$($installer.Length)" >> $env:GITHUB_OUTPUT
+          echo "SIZE_MB=$sizeMb MB" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release & Upload Installer
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.installer_meta.outputs.FILE_PATH }}
+          generate_release_notes: true
+          body: |
+            ### 📦 Thea Windows Release
+            - **Installer**: `${{ steps.installer_meta.outputs.FILE_NAME }}`
+            - **Size**: `${{ steps.installer_meta.outputs.SIZE_MB }}` (${{ steps.installer_meta.outputs.SIZE_BYTES }} bytes)
+            - **SHA-256 Checksum**:
+            ```
+            ${{ steps.installer_meta.outputs.SHA256 }}
+            ```
