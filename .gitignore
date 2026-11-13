@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Build artefacts and local QA shots
+out/
+build/
+dist/
+*.spec
+
+# Editor / OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
