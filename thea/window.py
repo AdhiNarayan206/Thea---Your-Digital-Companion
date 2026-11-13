@@ -73,6 +73,7 @@ class Overlay(QWidget):
         self.margin = config.FOLLOW_MARGIN
         self.setFixedSize(int(self.thea.size) + self.margin * 2, int(self.thea.size) + self.margin * 2)
 
+        self._dashboard = None
         self._last_pos = None
         self._clickthrough = None
         self._over = False
@@ -386,13 +387,16 @@ class Overlay(QWidget):
     def toggle_sleep(self):
         self.thea.toggle_sleep()
 
+    def show_dashboard(self):
+        if self._dashboard is None:
+            from .dashboard import DashboardWindow
+            self._dashboard = DashboardWindow(self)
+        self._dashboard.show()
+        self._dashboard.raise_()
+        self._dashboard.activateWindow()
+
     def show_stats(self):
-        s = self.stats
-        QMessageBox.information(
-            self,
-            "Thea",
-            f"Food {int(s.fullness)}\nJoy {int(s.joy)}\nEnergy {int(s.energy)}\nMeals {s.fed}",
-        )
+        self.show_dashboard()
 
     def quit(self):
         try:

@@ -48,7 +48,7 @@ def build_menu(parent, thea, stats):
     menu.addAction("Feed Thea", parent.feed)
     menu.addAction("Sing a song", parent.sing)
     menu.addAction("Play", parent.play)
-    menu.addAction("Numbers", parent.show_stats)
+    menu.addAction("Dashboard / Numbers", parent.show_dashboard)
     menu.addAction(
         "Wake up" if thea.state == "sleep" else "Go to sleep",
         parent.toggle_sleep,

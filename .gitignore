@@ -9,7 +9,7 @@ venv/
 out/
 build/
 dist/
-*.spec
+# *.spec
 
 # Editor / OS noise
 .vscode/
