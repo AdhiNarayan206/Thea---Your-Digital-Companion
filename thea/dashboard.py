@@ -329,14 +329,7 @@ class DashboardWindow(QWidget):
     def _change_scale(self, val):
         config.SCALE = val
         self.lbl_scale_val.setText(f"{val}x ({val * 40}px)")
-        self.overlay.scale = val / self.overlay.dpr
-        self.thea.size = 40 * self.overlay.scale
-        self.thea.shelf_y = int(self.thea.screen_h * config.SHELF_TOP_FRAC)
-        self.overlay.setFixedSize(
-            int(self.thea.size) + self.overlay.margin * 2,
-            int(self.thea.size) + self.overlay.margin * 2
-        )
-        self.overlay._update_mask()
+        self.overlay.set_scale(val)
 
     def _toggle_sound(self, checked):
         self.overlay.audio.enabled = checked

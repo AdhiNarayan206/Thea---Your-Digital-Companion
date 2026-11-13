@@ -174,6 +174,24 @@ class Overlay(QWidget):
         )
         self.quit()
 
+    def set_scale(self, scale_val):
+        """Dynamically resize Thea and reposition her on the floor."""
+        self.scale = scale_val / self.dpr
+        old_size = self.thea.size
+        self.thea.scale = self.scale
+        self.thea.size = 40 * self.scale
+        # Adjust Y to stay anchored on floor if grounded
+        on_floor = abs(self.thea.y - (self.work[1] + self.work[3] - old_size)) < 4.0
+        if on_floor:
+            self.thea.y = float(self.thea.floor())
+        self.margin = config.FOLLOW_MARGIN
+        self.setFixedSize(
+            int(self.thea.size) + self.margin * 2,
+            int(self.thea.size) + self.margin * 2,
+        )
+        self._follow()
+        self.update()
+
     # -- helpers ----------------------------------------------------------
     def _to_qimage(self, arr):
         h, w = arr.shape[:2]

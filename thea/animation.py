@@ -65,17 +65,23 @@ class Thea:
         m = rig.body_mask()
         for sq in (-0.12, 0.08):
             m |= rig.body_mask({"squash": sq})
+        # Dilate mask by 2 pixels so small scales remain easy to click/hover
         grow = m.copy()
-        grow[1:, :] |= m[:-1, :]
-        grow[:-1, :] |= m[1:, :]
-        grow[:, 1:] |= m[:, :-1]
-        grow[:, :-1] |= m[:, 1:]
+        for _ in range(2):
+            grow[1:, :] |= grow[:-1, :]
+            grow[:-1, :] |= grow[1:, :]
+            grow[:, 1:] |= grow[:, :-1]
+            grow[:, :-1] |= grow[:, 1:]
         return grow
 
     def hit(self, px, py):
-        lx = int((px - self.x) // self.scale)
-        ly = int((py - self.y) // self.scale)
+        lx = int(round((px - self.x) / self.scale))
+        ly = int(round((py - self.y) / self.scale))
         if not (0 <= lx < rig.W and 0 <= ly < rig.H):
+            # Generous bounding box margin at small sizes (padding = 6px)
+            pad = max(4.0, 10.0 - self.scale)
+            if (self.x - pad) <= px <= (self.x + self.size + pad) and (self.y - pad) <= py <= (self.y + self.size + pad):
+                return True
             return False
         return bool(self._hitmask[ly, lx])
 
